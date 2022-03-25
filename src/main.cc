@@ -138,22 +138,36 @@ void print_dram_stats()
     // cout << "DRAM Statistics" << endl;
     for (uint32_t i=0; i<DRAM_CHANNELS; i++) 
     {
-        cout << "Channel_" << i << "_RQ_row_buffer_hit " << uncore.DRAM.RQ[i].ROW_BUFFER_HIT << endl
-            << "Channel_" << i << "_RQ_row_buffer_miss " << uncore.DRAM.RQ[i].ROW_BUFFER_MISS << endl
-            << "Channel_" << i << "_WQ_row_buffer_hit " << uncore.DRAM.WQ[i].ROW_BUFFER_HIT << endl
-            << "Channel_" << i << "_WQ_row_buffer_miss " << uncore.DRAM.WQ[i].ROW_BUFFER_MISS << endl
-            << "Channel_" << i << "_WQ_full " << uncore.DRAM.WQ[i].FULL << endl
-            << "Channel_" << i << "_dbus_congested " << uncore.DRAM.dbus_congested[NUM_TYPES][NUM_TYPES] << endl
-            << endl;
+        cout << "Channel_" << i << "_RQ_row_buffer_hit " << uncore.DRAM0.RQ[i].ROW_BUFFER_HIT << endl
+            << "Channel_" << i << "_RQ_row_buffer_miss " << uncore.DRAM0.RQ[i].ROW_BUFFER_MISS << endl
+            << "Channel_" << i << "_WQ_row_buffer_hit " << uncore.DRAM0.WQ[i].ROW_BUFFER_HIT << endl
+            << "Channel_" << i << "_WQ_row_buffer_miss " << uncore.DRAM0.WQ[i].ROW_BUFFER_MISS << endl
+            << "Channel_" << i << "_WQ_full " << uncore.DRAM0.WQ[i].FULL << endl
+            << "Channel_" << i << "_dbus_congested " << uncore.DRAM0.dbus_congested[NUM_TYPES][NUM_TYPES] << endl
+
+            << "Channel_" << i << "_RQ_row_buffer_hit " << uncore.DRAM1.RQ[i].ROW_BUFFER_HIT << endl
+            << "Channel_" << i << "_RQ_row_buffer_miss " << uncore.DRAM1.RQ[i].ROW_BUFFER_MISS << endl
+            << "Channel_" << i << "_WQ_row_buffer_hit " << uncore.DRAM1.WQ[i].ROW_BUFFER_HIT << endl
+            << "Channel_" << i << "_WQ_row_buffer_miss " << uncore.DRAM1.WQ[i].ROW_BUFFER_MISS << endl
+            << "Channel_" << i << "_WQ_full " << uncore.DRAM1.WQ[i].FULL << endl
+            << "Channel_" << i << "_dbus_congested " << uncore.DRAM1.dbus_congested[NUM_TYPES][NUM_TYPES] << endl;
     }
 
-    uint64_t total_congested_cycle = 0;
-    for (uint32_t i=0; i<DRAM_CHANNELS; i++)
-        total_congested_cycle += uncore.DRAM.dbus_cycle_congested[i];
-    if (uncore.DRAM.dbus_congested[NUM_TYPES][NUM_TYPES])
-        cout << "avg_congested_cycle " << (total_congested_cycle / uncore.DRAM.dbus_congested[NUM_TYPES][NUM_TYPES]) << endl;
+    uint64_t total_congested_cycle0 = 0, total_congested_cycle1 = 0;
+    for (uint32_t i=0; i<DRAM_CHANNELS; i++){
+        total_congested_cycle0 += uncore.DRAM0.dbus_cycle_congested[i];
+        total_congested_cycle1 += uncore.DRAM1.dbus_cycle_congested[i];
+    }
+    if (uncore.DRAM0.dbus_congested[NUM_TYPES][NUM_TYPES])
+        cout << "avg_congested_cycle 0 " << (total_congested_cycle0 / uncore.DRAM0.dbus_congested[NUM_TYPES][NUM_TYPES]) << endl;
     else
-        cout << "avg_congested_cycle 0" << endl;
+        cout << "avg_congested_cycle 0 X" << endl;
+    if (uncore.DRAM1.dbus_congested[NUM_TYPES][NUM_TYPES])
+        cout << "avg_congested_cycle 1 " << (total_congested_cycle1 / uncore.DRAM1.dbus_congested[NUM_TYPES][NUM_TYPES]) << endl;
+    else
+        cout << "avg_congested_cycle 1 X" << endl;
+
+    //cout << "Total Access on DRAM0: " << uncore.DRAM0;
 }
 
 void reset_cache_stats(uint32_t cpu, CACHE *cache)
@@ -237,10 +251,15 @@ void finish_warmup()
 
     // reset DRAM stats
     for (uint32_t i=0; i<DRAM_CHANNELS; i++) {
-        uncore.DRAM.RQ[i].ROW_BUFFER_HIT = 0;
-        uncore.DRAM.RQ[i].ROW_BUFFER_MISS = 0;
-        uncore.DRAM.WQ[i].ROW_BUFFER_HIT = 0;
-        uncore.DRAM.WQ[i].ROW_BUFFER_MISS = 0;
+        uncore.DRAM0.RQ[i].ROW_BUFFER_HIT = 0;
+        uncore.DRAM0.RQ[i].ROW_BUFFER_MISS = 0;
+        uncore.DRAM0.WQ[i].ROW_BUFFER_HIT = 0;
+        uncore.DRAM0.WQ[i].ROW_BUFFER_MISS = 0;
+
+        uncore.DRAM1.RQ[i].ROW_BUFFER_HIT = 0;
+        uncore.DRAM1.RQ[i].ROW_BUFFER_MISS = 0;
+        uncore.DRAM1.WQ[i].ROW_BUFFER_HIT = 0;
+        uncore.DRAM1.WQ[i].ROW_BUFFER_MISS = 0;
     }
 
     // set actual cache latency
@@ -518,6 +537,7 @@ void print_knobs()
     cout << "num_cpus " << NUM_CPUS << endl
         << "cpu_freq " << CPU_FREQ << endl
         << "dram_io_freq " << DRAM_IO_FREQ << endl
+        << "nvram_io_freq " << DRAM_IO_FREQ << endl
         << "page_size " << PAGE_SIZE << endl
         << "block_size " << BLOCK_SIZE << endl
         << "max_read_per_cycle " << MAX_READ_PER_CYCLE << endl
@@ -530,10 +550,19 @@ void print_knobs()
         << "dram_row_size " << DRAM_ROW_SIZE << endl
         << "dram_size " << DRAM_SIZE << endl
         << "dram_pages " << DRAM_PAGES << endl
+        << "NVram_channels " << NVRAM_CHANNELS << endl
+        << "NVram_ranks " << NVRAM_RANKS << endl
+        << "NVram_banks " << NVRAM_BANKS << endl
+        << "NVram_rows " << NVRAM_ROWS << endl
+        << "NVram_columns " << NVRAM_COLUMNS << endl
+        << "NVram_row_size " << NVRAM_ROW_SIZE << endl
+        << "NVram_size " << NVRAM_SIZE << endl
+        << "NVram_pages " << NVRAM_PAGES << endl
         << endl;
     print_core_config();
     print_cache_config();
     print_dram_config();
+    print_NVram_config();
     cout << endl;
 }
 
@@ -614,23 +643,39 @@ int main(int argc, char** argv)
         DRAM_MTPS = DRAM_IO_FREQ/4;
     else
         DRAM_MTPS = DRAM_IO_FREQ;
+   // if (knob_low_bandwidth)
+
+    NVRAM_MTPS = DRAM_MTPS/4;
+   // else
+    NVRAM_MTPS = DRAM_MTPS;
 
     // DRAM access latency
     tRP  = (uint32_t)((1.0 * tRP_DRAM_NANOSECONDS  * CPU_FREQ) / 1000); 
     tRCD = (uint32_t)((1.0 * tRCD_DRAM_NANOSECONDS * CPU_FREQ) / 1000); 
     tCAS = (uint32_t)((1.0 * tCAS_DRAM_NANOSECONDS * CPU_FREQ) / 1000); 
+   // NVRAM access latency
+    NV_tRP  = (uint32_t)((1.0 * tRP_NVRAM_NANOSECONDS  * CPU_FREQ) / 1000); 
+    NV_tRCD = (uint32_t)((1.0 * tRCD_NVRAM_NANOSECONDS * CPU_FREQ) / 1000); 
+    NV_tCAS = (uint32_t)((1.0 * tCAS_NVRAM_NANOSECONDS * CPU_FREQ) / 1000); 
    
     cout << " DRAM access latency: " << tRP + tRCD + tCAS  << endl; 
+    cout << " NVRAM access latency: " << NV_tRP + NV_tRCD + NV_tCAS  << endl; 
 
     // default: 16 = (64 / 8) * (3200 / 1600)
     // it takes 16 CPU cycles to tranfser 64B cache block on a 8B (64-bit) bus 
     // note that dram burst length = BLOCK_SIZE/DRAM_CHANNEL_WIDTH
     DRAM_DBUS_RETURN_TIME = (BLOCK_SIZE / DRAM_CHANNEL_WIDTH) * (1.0 * CPU_FREQ / DRAM_MTPS);
+    NVRAM_DBUS_RETURN_TIME = (BLOCK_SIZE / NVRAM_CHANNEL_WIDTH) * (1.0 * CPU_FREQ / NVRAM_MTPS);
+
 
     printf("Off-chip DRAM Size: %u MB Channels: %u Width: %u-bit Data Rate: %u MT/s\n",
             DRAM_SIZE, DRAM_CHANNELS, 8*DRAM_CHANNEL_WIDTH, DRAM_MTPS);
 
+    printf("Off-chip NVRAM Size: %u MB Channels: %u Width: %u-bit Data Rate: %u MT/s\n",
+            NVRAM_SIZE, NVRAM_CHANNELS, 8*NVRAM_CHANNEL_WIDTH, NVRAM_MTPS);
+
     cout << " DRAM_DBUS_RETURN_TIME: " << DRAM_DBUS_RETURN_TIME  << endl;
+    cout << " NVRAM_DBUS_RETURN_TIME: " << NVRAM_DBUS_RETURN_TIME  << endl;
     // end consequence of knobs
 
     // search through the argv for "-traces"
@@ -771,15 +816,22 @@ int main(int argc, char** argv)
         uncore.LLC.MAX_READ  = MAX_READ_PER_CYCLE;
         uncore.LLC.upper_level_icache[i] = &ooo_cpu[i].L2C;
         uncore.LLC.upper_level_dcache[i] = &ooo_cpu[i].L2C;
-        uncore.LLC.lower_level = &uncore.DRAM;
+        // TODO this has to fix since we have two inerface but data structure pointer remove the previous one
+        uncore.LLC.lower_level = &uncore.DRAM0;
+        uncore.LLC.lower_level_second = &uncore.DRAM1;
 
-        // OFF-CHIP DRAM
-        uncore.DRAM.fill_level = FILL_DRAM;
-        uncore.DRAM.upper_level_icache[i] = &uncore.LLC;
-        uncore.DRAM.upper_level_dcache[i] = &uncore.LLC;
+        // OFF-CHIP DRAMS
+        uncore.DRAM0.fill_level = FILL_DRAM;
+        uncore.DRAM0.upper_level_icache[i] = &uncore.LLC;
+        uncore.DRAM0.upper_level_dcache[i] = &uncore.LLC;
+        uncore.DRAM1.fill_level = FILL_DRAM;
+        uncore.DRAM1.upper_level_icache[i] = &uncore.LLC;
+        uncore.DRAM1.upper_level_dcache[i] = &uncore.LLC;
         for (uint32_t i=0; i<DRAM_CHANNELS; i++) {
-            uncore.DRAM.RQ[i].is_RQ = 1;
-            uncore.DRAM.WQ[i].is_WQ = 1;
+            uncore.DRAM0.RQ[i].is_RQ = 1;
+            uncore.DRAM0.WQ[i].is_WQ = 1;
+            uncore.DRAM1.RQ[i].is_RQ = 1;
+            uncore.DRAM1.WQ[i].is_WQ = 1;
         }
 
         warmup_complete[i] = 0;
@@ -920,7 +972,9 @@ int main(int argc, char** argv)
 
         // TODO: should it be backward?
         uncore.LLC.operate();
-        uncore.DRAM.operate();
+        uncore.DRAM0.operate();
+        uncore.DRAM1.operate();
+
     }
 
     uint64_t elapsed_second = (uint64_t)(time(NULL) - start_time),
