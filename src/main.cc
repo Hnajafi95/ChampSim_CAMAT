@@ -643,11 +643,11 @@ int main(int argc, char** argv)
         DRAM_MTPS = DRAM_IO_FREQ/4;
     else
         DRAM_MTPS = DRAM_IO_FREQ;
-   // if (knob_low_bandwidth)
+    if (knob_low_bandwidth)
 
-    NVRAM_MTPS = DRAM_MTPS/4;
-   // else
-    NVRAM_MTPS = DRAM_MTPS;
+        NVRAM_MTPS = NVRAM_IO_FREQ/4;
+    else
+        NVRAM_MTPS = NVRAM_IO_FREQ;
 
     // DRAM access latency
     tRP  = (uint32_t)((1.0 * tRP_DRAM_NANOSECONDS  * CPU_FREQ) / 1000); 
@@ -670,6 +670,7 @@ int main(int argc, char** argv)
 
     printf("Off-chip DRAM Size: %u MB Channels: %u Width: %u-bit Data Rate: %u MT/s\n",
             DRAM_SIZE, DRAM_CHANNELS, 8*DRAM_CHANNEL_WIDTH, DRAM_MTPS);
+
 
     printf("Off-chip NVRAM Size: %u MB Channels: %u Width: %u-bit Data Rate: %u MT/s\n",
             NVRAM_SIZE, NVRAM_CHANNELS, 8*NVRAM_CHANNEL_WIDTH, NVRAM_MTPS);

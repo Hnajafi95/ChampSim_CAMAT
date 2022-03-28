@@ -14,13 +14,16 @@
 extern uint32_t tRP,  // Row Precharge (RP) latency
                 tRCD, // Row address to Column address (RCD) latency
                 tCAS; // Column Address Strobe (CAS) latency
+extern uint32_t NV_tRP,  // Row Precharge (RP) latency
+                NV_tRCD, // Row address to Column address (RCD) latency
+                NV_tCAS; // Column Address Strobe (CAS) latency
 
 extern uint64_t l2pf_access;
 
 class MEMORY {
   public:
     // memory interface
-    MEMORY *upper_level_icache[NUM_CPUS], *upper_level_dcache[NUM_CPUS], *lower_level, *extra_interface;
+    MEMORY *upper_level_icache[NUM_CPUS], *upper_level_dcache[NUM_CPUS], *lower_level, *extra_interface, *lower_level_second;
 
     // empty queues
     PACKET_QUEUE WQ{"EMPTY", 1}, RQ{"EMPTY", 1}, PQ{"EMPTY", 1}, MSHR{"EMPTY", 1};
@@ -38,7 +41,7 @@ class MEMORY {
     // stats
     uint64_t ACCESS[NUM_TYPES], HIT[NUM_TYPES], MISS[NUM_TYPES], MSHR_MERGED[NUM_TYPES], STALL[NUM_TYPES];
 
-    MEMORY() {
+    MEMORY(): lower_level(NULL) {
         for (uint32_t i=0; i<NUM_TYPES; i++) {
             ACCESS[i] = 0;
             HIT[i] = 0;

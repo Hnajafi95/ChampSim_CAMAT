@@ -104,8 +104,16 @@ class CACHE : public MEMORY {
              pf_fill;
 
     // queues
+    // PACKET_QUEUE WQ0{NAME + "_WQ0", WQ_SIZE}, // write0 queue
+    //              WQ1{NAME + "_WQ1", WQ_SIZE}, // write1 queue
+
+    //              RQ0{NAME + "_RQ0", RQ_SIZE}, // read0 queue
+    //              RQ1{NAME + "_RQ1", RQ_SIZE}, // read1 queue
+
     PACKET_QUEUE WQ{NAME + "_WQ", WQ_SIZE}, // write queue
-                 RQ{NAME + "_RQ", RQ_SIZE}, // read queue
+                 RQ{NAME + "_RQ", RQ_SIZE}, // read0 queue
+
+
                  PQ{NAME + "_PQ", PQ_SIZE}, // prefetch queue
                  MSHR{NAME + "_MSHR", MSHR_SIZE}, // MSHR
                  PROCESSED{NAME + "_PROCESSED", ROB_SIZE}; // processed queue
@@ -213,6 +221,10 @@ class CACHE : public MEMORY {
     };
 
     // functions
+    // int CACHE::sub_add_rq(PACKET_QUEUE read_queue, PACKET_QUEUE write_queue, PACKET *packet);
+    // int CACHE::sub_add_wq(PACKET_QUEUE read_queue, PACKET_QUEUE write_queue, PACKET *packet);
+    // int CACHE::sub_add_pq(PACKET_QUEUE read_queue, PACKET_QUEUE write_queue, PACKET *packet);
+
     int  add_rq(PACKET *packet),
          add_wq(PACKET *packet),
          add_pq(PACKET *packet);

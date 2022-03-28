@@ -36,6 +36,7 @@
 #define NUM_CPUS 1
 #define CPU_FREQ 4000
 #define DRAM_IO_FREQ 2400 // DDR4-2400
+#define NVRAM_IO_FREQ 1600 // DDR4-2400
 #define PAGE_SIZE 4096
 #define LOG2_PAGE_SIZE 12
 
@@ -53,12 +54,12 @@
 #define FILL_LLC   4
 #define FILL_DRC   8
 #define FILL_DRAM 16
-
+#define FILL_NVRAM 16
 // DRAM
 #define DRAM_CHANNELS 1      // default: assuming one DIMM per one channel 4GB * 1 => 4GB off-chip memory
 #define LOG2_DRAM_CHANNELS 0
-#define DRAM_RANKS 1         // 512MB * 8 ranks => 4GB per DIMM
-#define LOG2_DRAM_RANKS 0
+#define DRAM_RANKS 4         // 512MB * 8 ranks => 4GB per DIMM
+#define LOG2_DRAM_RANKS 2
 #define DRAM_BANKS 8         // 64MB * 8 banks => 512MB per rank
 #define LOG2_DRAM_BANKS 3
 #define DRAM_ROWS 65536      // 2KB * 32K rows => 64MB per bank
@@ -69,6 +70,22 @@
 
 #define DRAM_SIZE (DRAM_CHANNELS*DRAM_RANKS*DRAM_BANKS*DRAM_ROWS*DRAM_ROW_SIZE/1024) 
 #define DRAM_PAGES ((DRAM_SIZE<<10)>>2) 
+
+// NVRAM ///////////////////////////////////////////////
+#define NVRAM_CHANNELS 1      // default: assuming one DIMM per one channel 4GB * 1 => 4GB off-chip memory
+#define LOG2_NVRAM_CHANNELS 0
+#define NVRAM_RANKS 1        // 512MB * 8 ranks => 4GB per DIMM
+#define LOG2_NVRAM_RANKS 0
+#define NVRAM_BANKS 8         // 64MB * 8 banks => 512MB per rank
+#define LOG2_NVRAM_BANKS 3
+#define NVRAM_ROWS 65536      // 2KB * 32K rows => 64MB per bank
+#define LOG2_NVRAM_ROWS 16
+#define NVRAM_COLUMNS 128      // 64B * 32 column chunks (Assuming 1B DRAM cell * 8 chips * 8 transactions = 64B size of column chunks) => 2KB per row
+#define LOG2_NVRAM_COLUMNS 7
+#define NVRAM_ROW_SIZE (BLOCK_SIZE*NVRAM_COLUMNS/1024)
+
+#define NVRAM_SIZE (NVRAM_CHANNELS*NVRAM_RANKS*NVRAM_BANKS*NVRAM_ROWS*NVRAM_ROW_SIZE/1024) 
+#define NVRAM_PAGES ((NVRAM_SIZE<<10)>>2) 
 //#define DRAM_PAGES 10
 
 using namespace std;

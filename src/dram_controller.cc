@@ -176,19 +176,19 @@ void MEMORY_CONTROLLER_NV::operate()
             // reset scheduled RQ requests
             reset_remain_requests(&RQ[i], i);
             // add data bus turn-around time
-            dbus_cycle_available[i] += DRAM_DBUS_TURN_AROUND_TIME;
+            dbus_cycle_available[i] += NVRAM_DBUS_TURN_AROUND_TIME;
         } else if (write_mode[i]) {
 
             if (WQ[i].occupancy == 0)
                 write_mode[i] = 0;
-            else if (RQ[i].occupancy && (WQ[i].occupancy < DRAM_WRITE_LOW_WM))
+            else if (RQ[i].occupancy && (WQ[i].occupancy < NVRAM_WRITE_LOW_WM))
                 write_mode[i] = 0;
 
             if (write_mode[i] == 0) {
                 // reset scheduled WQ requests
                 reset_remain_requests(&WQ[i], i);
                 // add data bus turnaround time
-                dbus_cycle_available[i] += DRAM_DBUS_TURN_AROUND_TIME;
+                dbus_cycle_available[i] += NVRAM_DBUS_TURN_AROUND_TIME;
             }
         }
 
@@ -199,7 +199,7 @@ void MEMORY_CONTROLLER_NV::operate()
                 schedule(&WQ[i]);
         }
 
-        // process DRAM requests
+        // process NVRAM requests
         if (write_mode[i] && (WQ[i].next_process_index < WQ[i].SIZE)) {
             if (WQ[i].next_process_cycle <= current_core_cycle[WQ[i].entry[WQ[i].next_process_index].cpu])
                 process(&WQ[i]);
@@ -212,7 +212,7 @@ void MEMORY_CONTROLLER_NV::operate()
                 schedule(&RQ[i]);
         }
 
-        // process DRAM requests
+        // process NVRAM requests
         if ((write_mode[i] == 0) && (RQ[i].next_process_index < RQ[i].SIZE)) {
             if (RQ[i].next_process_cycle <= current_core_cycle[RQ[i].entry[RQ[i].next_process_index].cpu])
                 process(&RQ[i]);
@@ -616,7 +616,7 @@ void MEMORY_CONTROLLER_NV::process(PACKET_QUEUE *queue)
         assert(0);
     }
 
-    // paid all DRAM access latency, data is ready to be processed
+    // paid all NVRAM access latency, data is ready to be processed
     if (bank_request[op_channel][op_rank][op_bank].cycle_available <= current_core_cycle[op_cpu]) {
 
         // check if data bus is available
@@ -624,14 +624,14 @@ void MEMORY_CONTROLLER_NV::process(PACKET_QUEUE *queue)
 
             if (queue->is_WQ) {
                 // update data bus cycle time
-                dbus_cycle_available[op_channel] = current_core_cycle[op_cpu] + DRAM_DBUS_RETURN_TIME;
+                dbus_cycle_available[op_channel] = current_core_cycle[op_cpu] + NVRAM_DBUS_RETURN_TIME;
 
                 if (bank_request[op_channel][op_rank][op_bank].row_buffer_hit)
                     queue->ROW_BUFFER_HIT++;
                 else
                     queue->ROW_BUFFER_MISS++;
 
-                // this bank is ready for another DRAM request
+                // this bank is ready for another NVRAM request
                 bank_request[op_channel][op_rank][op_bank].request_index = -1;
                 bank_request[op_channel][op_rank][op_bank].row_buffer_hit = 0;
                 bank_request[op_channel][op_rank][op_bank].working = false;
@@ -659,7 +659,7 @@ void MEMORY_CONTROLLER_NV::process(PACKET_QUEUE *queue)
                 else
                     queue->ROW_BUFFER_MISS++;
 
-                // this bank is ready for another DRAM request
+                // this bank is ready for another NVRAM request
                 bank_request[op_channel][op_rank][op_bank].request_index = -1;
                 bank_request[op_channel][op_rank][op_bank].row_buffer_hit = 0;
                 bank_request[op_channel][op_rank][op_bank].working = false;
